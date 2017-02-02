@@ -13,6 +13,7 @@
 #define _FCEUGX_H_
 
 #include <unistd.h>
+#include <sys/param.h>
 
 #include "fceultra/driver.h"
 

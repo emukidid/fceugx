@@ -11,7 +11,7 @@
 
 #include <malloc.h>
 #include <gctypes.h>
-
+#include <sys/param.h>
 #include "fceugx.h"
 #include "fceusupport.h"
 #include "fileop.h"

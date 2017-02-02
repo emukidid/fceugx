@@ -894,10 +894,10 @@ static void WindowCredits(void * ptr)
 
 		Menu_Render();
 
-		if((userInput[0].wpad->btns_d || userInput[0].pad.btns_d || userInput[0].wupcdata.btns_d) ||
-		   (userInput[1].wpad->btns_d || userInput[1].pad.btns_d || userInput[1].wupcdata.btns_d) ||
-		   (userInput[2].wpad->btns_d || userInput[2].pad.btns_d || userInput[2].wupcdata.btns_d) ||
-		   (userInput[3].wpad->btns_d || userInput[3].pad.btns_d || userInput[3].wupcdata.btns_d))
+		if((userInput[0].wpad->btns_d || userInput[0].pad.btns_d) ||
+		   (userInput[1].wpad->btns_d || userInput[1].pad.btns_d) ||
+		   (userInput[2].wpad->btns_d || userInput[2].pad.btns_d) ||
+		   (userInput[3].wpad->btns_d || userInput[3].pad.btns_d))
 		{
 			exit = true;
 		}
@@ -907,7 +907,6 @@ static void WindowCredits(void * ptr)
 	// clear buttons pressed
 	for(i=0; i < 4; i++)
 	{
-		userInput[i].wupcdata.btns_d = 0;
 		userInput[i].wpad->btns_d = 0;
 		userInput[i].pad.btns_d = 0;
 	}
@@ -1492,20 +1491,6 @@ static int MenuGame()
 				newStatus = true;
 				newLevel = (userInput[i].wpad->battery_level / 100.0) * 4;
 				if(newLevel > 4) newLevel = 4;
-			}
-			else
-			{
-				struct WUPCData *data = WUPC_Data(i);
-				if(data != NULL)
-				{
-					newStatus = true;
-					newLevel = data->battery;
-				}
-				else
-				{
-					newStatus = false;
-					newLevel = 0;
-				}
 			}
 
 			if(status[i] != newStatus || level[i] != newLevel)
@@ -2677,8 +2662,6 @@ ButtonMappingWindow()
 						break;
 				}
 			}
-			if(pressed == 0)
-				pressed = userInput[0].wupcdata.btns_d;
 		}
 	}
 

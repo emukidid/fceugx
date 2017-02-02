@@ -191,7 +191,7 @@ void
 UpdatePads()
 {
 	#ifdef HW_RVL
-	WUPC_UpdateButtonStats();
+	//WUPC_UpdateButtonStats();
 	WPAD_ScanPads();
 	#endif
 	
@@ -209,13 +209,13 @@ UpdatePads()
 		userInput[i].pad.triggerL = PAD_TriggerL(i);
 		userInput[i].pad.triggerR = PAD_TriggerR(i);
 		#ifdef HW_RVL
-		userInput[i].wupcdata.btns_d = WUPC_ButtonsDown(i);
-		userInput[i].wupcdata.btns_u = WUPC_ButtonsUp(i);
-		userInput[i].wupcdata.btns_h = WUPC_ButtonsHeld(i);
-		userInput[i].wupcdata.stickX = WUPC_lStickX(i);
-		userInput[i].wupcdata.stickY = WUPC_lStickY(i);
-		userInput[i].wupcdata.substickX = WUPC_rStickX(i);
-		userInput[i].wupcdata.substickY = WUPC_rStickY(i);
+		//userInput[i].wupcdata.btns_d = WUPC_ButtonsDown(i);
+		//userInput[i].wupcdata.btns_u = WUPC_ButtonsUp(i);
+		//userInput[i].wupcdata.btns_h = WUPC_ButtonsHeld(i);
+		//userInput[i].wupcdata.stickX = WUPC_lStickX(i);
+		//userInput[i].wupcdata.stickY = WUPC_lStickY(i);
+		//userInput[i].wupcdata.substickX = WUPC_rStickX(i);
+		//userInput[i].wupcdata.substickY = WUPC_rStickY(i);
 		#endif
 	}
 }
@@ -355,7 +355,7 @@ static void UpdateCursorPosition (int chan)
 			if (pos_y < 0) pos_y = 0;
 		}
 		
-		/* WiiU Pro Controller */
+		/* WiiU Pro Controller 
 		s8 wupc_ax = userInput[chan].wupcdata.stickX;
 		s8 wupc_ay = userInput[chan].wupcdata.stickX;
 
@@ -379,7 +379,7 @@ static void UpdateCursorPosition (int chan)
 		{
 			pos_y -= (wupc_ay*1.0)/WUPCZAPPERPADCAL;
 			if (pos_y < 0) pos_y = 0;
-		}
+		}*/
 	}
 #endif
 }
@@ -408,9 +408,9 @@ static unsigned char DecodeJoy(unsigned short chan)
 	if ( WPAD_Probe(chan, &exp_type) != 0 )
 		exp_type = WPAD_EXP_NONE;
 
-	s16 wupc_ax = userInput[chan].wupcdata.stickX;
+	/*s16 wupc_ax = userInput[chan].wupcdata.stickX;
 	s16 wupc_ay = userInput[chan].wupcdata.stickY;
-	u32 wupcp = userInput[chan].wupcdata.btns_h;
+	u32 wupcp = userInput[chan].wupcdata.btns_h;*/
 	#endif
 
 	/***
@@ -449,7 +449,7 @@ static unsigned char DecodeJoy(unsigned short chan)
 			J |= JOY_DOWN;
 	}
 	
-	/* WiiU Pro Controller */
+	/* WiiU Pro Controller 
 	if (wupc_ax * wupc_ax + wupc_ay * wupc_ay > WUPCCAL * WUPCCAL)
 	{
 		angle = atan2(wupc_ay, wupc_ax);
@@ -461,7 +461,7 @@ static unsigned char DecodeJoy(unsigned short chan)
 			J |= JOY_UP;
 		else if(sin(angle) < -THRES)
 			J |= JOY_DOWN;
-	}
+	}*/
 #endif
 
 	bool zapper_triggered = false;
@@ -525,7 +525,6 @@ static unsigned char DecodeJoy(unsigned short chan)
 		|| ( (exp_type == WPAD_EXP_NONE) && (wp & btnmap[CTRL_PAD][CTRLR_WIIMOTE][i]) )		// wiimote
 		|| ( (exp_type == WPAD_EXP_CLASSIC) && (wp & btnmap[CTRL_PAD][CTRLR_CLASSIC][i]) )	// classic controller
 		|| ( (exp_type == WPAD_EXP_NUNCHUK) && (wp & btnmap[CTRL_PAD][CTRLR_NUNCHUK][i]) )	// nunchuk + wiimote
-		|| ( (wupcp & btnmap[CTRL_PAD][CTRLR_CLASSIC][i]) ) 								// WiiU Pro Controller
 		#endif
 		)
 		{
@@ -580,8 +579,7 @@ bool MenuRequested()
 			 ) 
 			#ifdef HW_RVL
 			|| (userInput[i].wpad->btns_h & WPAD_BUTTON_HOME) ||
-			(userInput[i].wpad->btns_h & WPAD_CLASSIC_BUTTON_HOME) ||
-			(userInput[i].wupcdata.btns_h & WPAD_CLASSIC_BUTTON_HOME)
+			(userInput[i].wpad->btns_h & WPAD_CLASSIC_BUTTON_HOME) 
 			#endif
 		)
 		{
@@ -601,7 +599,7 @@ void GetJoy()
 
 	// Turbo mode
 	// RIGHT on c-stick and on classic ctrlr right joystick
-	if(userInput[0].pad.substickX > 70 || userInput[0].WPAD_StickX(1) > 70 || userInput[0].wupcdata.substickX > 560)
+	if(userInput[0].pad.substickX > 70 || userInput[0].WPAD_StickX(1) > 70)
 		turbomode = 1;
 	else
 		turbomode = 0;

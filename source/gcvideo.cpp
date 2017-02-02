@@ -34,7 +34,7 @@ int FDSSwitchRequested;
 /*** External 2D Video ***/
 /*** 2D Video Globals ***/
 GXRModeObj *vmode  = NULL; // Graphics Mode Object
-static unsigned int *xfb[2] = { NULL, NULL }; // Framebuffers
+static u32 *xfb[2] = { NULL, NULL }; // Framebuffers
 static int whichfb = 0; // Frame buffer toggle
 int screenheight = 480;
 int screenwidth = 640;
@@ -53,6 +53,7 @@ static Mtx GXmodelView2D;
 
 /*** Texture memory ***/
 static unsigned char texturemem[TEX_WIDTH * TEX_HEIGHT * 4] ATTRIBUTE_ALIGN (32);
+static GXTlutObj rgb656tlut;
 
 static int UpdateVideo = 1;
 static bool vmode_60hz = true;
@@ -71,7 +72,7 @@ struct pcpal {
 } pcpalette[256];
 
 static unsigned int gcpalette[256];	// Much simpler GC palette
-static unsigned short rgb565[256];	// Texture map palette
+static unsigned short rgb565[256] ATTRIBUTE_ALIGN (32);// Texture map palette
 bool shutter_3d_mode, anaglyph_3d_mode, eye_3d;
 bool AnaglyphPaletteValid = false; //CAK: Has the anaglyph palette below been generated yet?
 static unsigned short anaglyph565[64][64]; //CAK: Texture map left right combination anaglyph palette
@@ -682,9 +683,13 @@ ResetVideo_Emu ()
 	draw_init ();
 	UpdateScaling();
 
+	// reinitialize tlut
+	GX_InitTlutObj(&rgb656tlut, rgb565, GX_TL_RGB565, GX_TLUT_4K);
+	GX_LoadTlut(&rgb656tlut, GX_TLUT0);
+	
 	// reinitialize texture
 	GX_InvalidateTexAll ();
-	GX_InitTexObj (&texobj, texturemem, TEX_WIDTH, TEX_HEIGHT, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, GX_FALSE);	// initialize the texture obj we are going to use
+	GX_InitTexObjCI (&texobj, texturemem, TEX_WIDTH, TEX_HEIGHT, GX_TF_CI14, GX_CLAMP, GX_CLAMP, GX_FALSE, GX_TLUT0);	// initialize the texture obj we are going to use
 	if (!(GCSettings.render&1))
 		GX_InitTexObjLOD(&texobj,GX_NEAR,GX_NEAR_MIP_NEAR,2.5,9.0,0.0,GX_FALSE,GX_FALSE,GX_ANISO_1); // original/unfiltered video mode: force texture filtering OFF
 	GX_LoadTexObj (&texobj, GX_TEXMAP0);
@@ -719,12 +724,13 @@ void RenderFrame(unsigned char *XBuf)
 	u8 borderwidth = 0;
 
 	// 0 = off, 1 = vertical, 2 = horizontal, 3 = both
-	if(GCSettings.hideoverscan == 1 || GCSettings.hideoverscan == 3)
+	/*if(GCSettings.hideoverscan == 1 || GCSettings.hideoverscan == 3)
 		borderheight = 8;
 	if(GCSettings.hideoverscan >= 2)
-		borderwidth = 8;
+		borderwidth = 8;*/
 
-	u16 *texture = (unsigned short *)texturemem + (borderheight << 8) + (borderwidth << 2);
+	u16 *texture = (u16 *)texturemem + (borderheight << 8) + (borderwidth << 2);
+	u16 *wgPipePtr = (u16*)MEM_PHYSICAL_TO_K1(GX_RedirectWriteGatherPipe(texture));
 	u8 *src1 = XBuf + (borderheight << 8) + borderwidth;
 	u8 *src2 = XBuf + (borderheight << 8) + borderwidth + 256;
 	u8 *src3 = XBuf + (borderheight << 8) + borderwidth + 512;
@@ -736,40 +742,40 @@ void RenderFrame(unsigned char *XBuf)
 		for (width = 0; width < 256 - (borderwidth << 1); width += 4)
 		{
 			// Row one
-			*texture++ = rgb565[*src1++];
-			*texture++ = rgb565[*src1++];
-			*texture++ = rgb565[*src1++];
-			*texture++ = rgb565[*src1++];
+			*wgPipePtr = *src1++;
+			*wgPipePtr = *src1++;
+			*wgPipePtr = *src1++;
+			*wgPipePtr = *src1++;
 
 			// Row two
-			*texture++ = rgb565[*src2++];
-			*texture++ = rgb565[*src2++];
-			*texture++ = rgb565[*src2++];
-			*texture++ = rgb565[*src2++];
+			*wgPipePtr = *src2++;
+			*wgPipePtr = *src2++;
+			*wgPipePtr = *src2++;
+			*wgPipePtr = *src2++;
 
 			// Row three
-			*texture++ = rgb565[*src3++];
-			*texture++ = rgb565[*src3++];
-			*texture++ = rgb565[*src3++];
-			*texture++ = rgb565[*src3++];
+			*wgPipePtr = *src3++;
+			*wgPipePtr = *src3++;
+			*wgPipePtr = *src3++;
+			*wgPipePtr = *src3++;
 
 			// Row four
-			*texture++ = rgb565[*src4++];
-			*texture++ = rgb565[*src4++];
-			*texture++ = rgb565[*src4++];
-			*texture++ = rgb565[*src4++];
+			*wgPipePtr = *src4++;
+			*wgPipePtr = *src4++;
+			*wgPipePtr = *src4++;
+			*wgPipePtr = *src4++;
 		}
 		src1 += 768 + (borderwidth << 1); // line 4*N
 		src2 += 768 + (borderwidth << 1); // line 4*(N+1)
 		src3 += 768 + (borderwidth << 1); // line 4*(N+2)
 		src4 += 768 + (borderwidth << 1); // line 4*(N+3)
 
-		texture += (borderwidth << 3);
+		//texture += (borderwidth << 3);
 	}
 
 	// load texture into GX
-	DCFlushRange(texturemem, TEX_WIDTH * TEX_HEIGHT * 4);
-
+	//DCFlushRange(texturemem, TEX_WIDTH * TEX_HEIGHT * 4);
+	GX_RestoreWriteGatherPipe();
 	// clear texture objects
 	GX_InvalidateTexAll();
 

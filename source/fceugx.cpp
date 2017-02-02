@@ -8,7 +8,6 @@
  *
  * This file controls overall program flow. Most things start and end here!
  ****************************************************************************/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -16,12 +15,12 @@
 #include <gctypes.h>
 #include <ogc/system.h>
 #include <fat.h>
-#include <wiiuse/wpad.h>
-#include <wupc/wupc.h>
 #include <malloc.h>
 #include <sys/iosupport.h>
 
 #ifdef HW_RVL
+//#include <wupc/wupc.h>
+#include <wiiuse/wpad.h>
 #include <di/di.h>
 #endif
 
@@ -47,10 +46,10 @@
 
 #include "fceultra/types.h"
 
-void FCEUD_Update(uint8 *XBuf, int32 *Buffer, int Count);
-void FCEUD_UpdatePulfrich(uint8 *XBuf, int32 *Buffer, int Count);
-void FCEUD_UpdateLeft(uint8 *XBuf, int32 *Buffer, int Count);
-void FCEUD_UpdateRight(uint8 *XBuf, int32 *Buffer, int Count);
+void FCEUD_Update(uint8 *XBuf, int32 *Buffer, int32 Count);
+void FCEUD_UpdatePulfrich(uint8 *XBuf, int32 *Buffer, int32 Count);
+void FCEUD_UpdateLeft(uint8 *XBuf, int32 *Buffer, int32 Count);
+void FCEUD_UpdateRight(uint8 *XBuf, int32 *Buffer, int32 Count);
 
 extern "C" {
 #ifdef USE_VM
@@ -292,7 +291,7 @@ bool SaneIOS(u32 ios)
 static bool gecko = false;
 static mutex_t gecko_mutex = 0;
 
-static ssize_t __out_write(struct _reent *r, int fd, const char *ptr, size_t len)
+static ssize_t __out_write(struct _reent *r, void *fd, const char *ptr, size_t len)
 {
 	if (!gecko || len == 0)
 		return len;
@@ -388,7 +387,7 @@ int main(int argc, char *argv[])
 	SYS_SetPowerCallback(ShutdownCB);
 	SYS_SetResetCallback(ResetCB);
 	
-	WUPC_Init();
+//	WUPC_Init();
 	WPAD_Init();
 	WPAD_SetPowerButtonCallback((WPADShutdownCallback)ShutdownCB);
 	DI_Init();
@@ -413,10 +412,11 @@ int main(int argc, char *argv[])
 	InitFreeType((u8*)font_ttf, font_ttf_size); // Initialize font system
 #ifdef USE_VM
 	gameScreenPng = (u8 *)vm_malloc(512*1024);
+	browserList = (BROWSERENTRY *)vm_malloc(sizeof(BROWSERENTRY)*MAX_BROWSER_SIZE);
 #else
 	gameScreenPng = (u8 *)malloc(512*1024);
-#endif
 	browserList = (BROWSERENTRY *)malloc(sizeof(BROWSERENTRY)*MAX_BROWSER_SIZE);
+#endif
 	InitGUIThreads();
 
 	// allocate memory to store rom

@@ -30,7 +30,7 @@ INCLUDES	:=	source
 CFLAGS		=	-g -O3 -LTO -Wall $(MACHDEP) $(INCLUDE) \
 				-DFRAMESKIP -DPSS_STYLE=1 -DPATH_MAX=1024 -DHAVE_ASPRINTF \
 				-D_SZ_ONE_DIRECTORY -D_LZMA_IN_CB -D_LZMA_OUT_READ -DUSE_VM \
-				-fomit-frame-pointer \
+				-fomit-frame-pointer -D_GNU_SOURCE \
 				-Wno-unused-parameter -Wno-strict-aliasing -Wno-write-strings
 CXXFLAGS	=	$(CFLAGS)
 LDFLAGS		=	-g $(MACHDEP) -LTO -Wl,-Map,$(notdir $@).map

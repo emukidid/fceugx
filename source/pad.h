@@ -13,8 +13,10 @@
 #define _PAD_H_
 
 #include <gctypes.h>
+#ifdef HW_RVL
 #include <wiiuse/wpad.h>
-#include <wupc/wupc.h>
+//#include <wupc/wupc.h>
+#endif
 
 #define PI 				3.14159265f
 #define PADCAL			50

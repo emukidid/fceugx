@@ -12,14 +12,10 @@
 #ifndef _FILEBROWSER_H_
 #define _FILEBROWSER_H_
 
-#include <unistd.h>
+#include <sys/param.h>
 
 #define MAXJOLIET 255
-#ifdef HW_DOL
-#define MAX_BROWSER_SIZE	1000
-#else
 #define MAX_BROWSER_SIZE	3000
-#endif
 
 typedef struct
 {
